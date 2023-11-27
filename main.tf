@@ -66,6 +66,6 @@ module "example_product" {
   # Variables for authentication to AWS via Dynamic Credentials
   tfc_hostname     = module.terraform_cloud_reference_engine.tfc_hostname
   tfc_organization = module.terraform_cloud_reference_engine.tfc_organization
-  tfc_provider_arn = module.terraform_cloud_reference_engine.oidc_provider_arn
+  tfc_provider_arn = "arn:aws:iam::367861373540:oidc-provider/app.terraform.io"
 
 }
