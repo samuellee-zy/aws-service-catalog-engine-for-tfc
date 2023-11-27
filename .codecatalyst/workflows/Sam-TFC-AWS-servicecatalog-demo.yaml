@@ -1,0 +1,49 @@
+Name: Sam-TFC-AWS-servicecatalog-demo
+SchemaVersion: "1.0"
+
+# Optional - Set automatic triggers.
+Triggers:
+  - Type: Push
+    Branches:
+      - main
+
+# Required - Define action configurations.
+Actions:
+  MyAction:
+    Identifier: aws/github-actions-runner@v1
+    Inputs:
+      Sources:
+        - WorkflowSource
+      # Define the key environment variables needed for pipeline
+      Variables:
+        - Name: TF_CLOUD_ORGANIZATION
+          Value: "samuellee-dev"
+        - Name: TF_API_TOKEN
+          Value: ${Secrets.TF_API_TOKEN}
+        - Name: TF_WORKSPACE
+          Value: "aws-service-catalog-engine-for-tfc"
+        - Name: CONFIG_DIRECTORY
+          Value: "./"
+    # Defines all the steps to utilise in pipeline - specifically Upload Files, Create Run and Apply Run
+    Configuration:
+      Steps:
+        - name: Upload TF Config files
+          id: upload
+          uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.1.1
+          with:
+            workspace: ${{ env.TF_WORKSPACE }}
+            directory: ${{ env.CONFIG_DIRECTORY }}
+        - name: Create run in TFC
+          id: create-run
+          uses: hashicorp/tfc-workflows-github/actions/create-run@v1.1.1
+          with:
+            workspace: ${{ env.TF_WORKSPACE }}
+            configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
+        - name: Apply TFC
+          id: apply-run
+          uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.1.1
+          with:
+            run: ${{ steps.create-run.outputs.run_id }}
+            comment: "Apply Run from AWS CodeCatalyst"
+    Compute:
+      Type: EC2
